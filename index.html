@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #logout {
+            float: right;
+            background-color: #dc3545;
+        }
+
+        #logout:hover {
+            background-color: #c82333;
+        }
+
+        p {
+            margin-top: 20px;
+        }
+
+        #b,
+        #l,
+        #bp,
+        #lp {
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Login Form -->
+    <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" required>
+        <button type="button" onclick="login()">Login</button>
+    </form>
+
+    <!-- Current Form -->
+    <form id="currentForm" class="hidden">
+        <label for="profit">Expected profit:</label>
+        <input type="number" id="profit" step="any"><br>
+
+        <label for="entry">Entry:</label>
+        <input type="number" id="entry" step="any"><br>
+
+        <label for="exit">Exit:</label>
+        <input type="number" id="exit" step="any"><br>
+
+        <button type="button" onclick="check()">Check</button>
+        <button type="button" id="logout" onclick="logout()">Logout</button>
+        <p>Input in Back field <span id="b">_</span> to get <span id="bp">_</span></p>
+        <p>Input in Lay field <span id="l">_</span> to wase <span id="lp">_</span></p>
+    </form>
+
+    <script>
+        const loginForm = document.getElementById("loginForm");
+        const currentForm = document.getElementById("currentForm");
+
+        const SESSION_KEY = "isLoggedIn";
+        const TIMEOUT_KEY = "lastActive";
+
+        function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            if (username === "abc" && password === "123") {
+                sessionStorage.setItem(SESSION_KEY, "true");
+                sessionStorage.setItem(TIMEOUT_KEY, Date.now());
+                showCurrentForm();
+            } else {
+                alert("Invalid credentials");
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem(SESSION_KEY);
+            sessionStorage.removeItem(TIMEOUT_KEY);
+            showLoginForm();
+        }
+
+        function check() {
+            alert("Check functionality goes here!");
+        }
+
+        function showLoginForm() {
+            loginForm.classList.remove("hidden");
+            currentForm.classList.add("hidden");
+        }
+
+        function showCurrentForm() {
+            loginForm.classList.add("hidden");
+            currentForm.classList.remove("hidden");
+        }
+
+        function autoLogout() {
+            const lastActive = parseInt(sessionStorage.getItem(TIMEOUT_KEY), 10);
+            const now = Date.now();
+            if (now - lastActive > 30 * 60 * 1000) {
+                logout();
+            }
+        }
+
+        // Initialize page based on session
+        if (sessionStorage.getItem(SESSION_KEY)) {
+            sessionStorage.setItem(TIMEOUT_KEY, Date.now()); // Update last active time
+            showCurrentForm();
+        } else {
+            showLoginForm();
+        }
+
+        // Monitor activity and auto-logout after 30 minutes of inactivity
+        setInterval(autoLogout, 1000);
+    </script>
+</body>
+
+</html>
