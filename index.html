@@ -2,165 +2,303 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bogus Checker</title>
+  <script>
+    // Disable right-click
+    document.addEventListener('contextmenu', function (event) {
+      event.preventDefault();
 
-        form {
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
+    });
 
-        label {
-            display: block;
-            margin-bottom: 10px;
-        }
+    // Disable F12 (Inspect Developer Tools)
+    document.addEventListener('keydown', function (event) {
+      if (event.key === "F12") {
+        event.preventDefault();
 
-        input[type="text"],
-        input[type="password"],
-        input[type="number"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            box-sizing: border-box;
-        }
+      }
 
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
+      // Disable Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+      if ((event.ctrlKey && event.shiftKey && (event.key === "I" || event.key === "J")) ||
+        (event.ctrlKey && event.key === "U")) {
+        event.preventDefault();
 
-        button:hover {
-            background-color: #0056b3;
-        }
+      }
+    });
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
 
-        #logout {
-            float: right;
-            background-color: #dc3545;
-        }
+    form {
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
 
-        #logout:hover {
-            background-color: #c82333;
-        }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
 
-        p {
-            margin-top: 20px;
-        }
+    input[type="text"],
+    input[type="password"],
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      box-sizing: border-box;
+    }
 
-        #b,
-        #l,
-        #bp,
-        #lp {
-            font-weight: bold;
-        }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
 
-        .hidden {
-            display: none;
-        }
-    </style>
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #logout {
+      float: right;
+      background-color: #dc3545;
+    }
+
+    #logout:hover {
+      background-color: #c82333;
+    }
+
+    p {
+      margin-top: 20px;
+    }
+
+    #b,
+    #l,
+    #bp,
+    #lp,
+    #f,
+    #s,
+    #bl,
+    #ll {
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
-    <!-- Login Form -->
-    <form id="loginForm">
-        <label for="username">Username:</label>
-        <input type="text" id="username" required>
-        <label for="password">Password:</label>
-        <input type="password" id="password" required>
-        <button type="button" onclick="login()">Login</button>
-    </form>
+  <!-- Login Form -->
+  <form id="loginForm">
+    <label for="username">Username:</label>
+    <input type="text" id="username" autocomplete="off" required>
+    <label for="password">Password:</label>
+    <input type="password" id="password" required>
+    <button type="button" onclick="login()">Login</button>
+    <!-- Error Message -->
+    <div id="error-message" class="error-message">Username or Password is incorrect.</div>
+  </form>
 
-    <!-- Current Form -->
-    <form id="currentForm" class="hidden">
-        <label for="profit">Expected profit:</label>
-        <input type="number" id="profit" step="any"><br>
+  <!-- Current Form -->
+  <form id="currentForm" class="hidden">
+    <label for="profit">Expected profit:</label>
+    <input type="number" id="profit" step="any"><br>
 
-        <label for="entry">Entry:</label>
-        <input type="number" id="entry" step="any"><br>
+    <label for="back">Back Ratio:</label>
+    <input type="number" id="back" step="any"><br>
 
-        <label for="exit">Exit:</label>
-        <input type="number" id="exit" step="any"><br>
+    <label for="lay">Lay Ratio:</label>
+    <input type="number" id="lay" step="any"><br>
 
-        <button type="button" onclick="check()">Check</button>
-        <button type="button" id="logout" onclick="logout()">Logout</button>
-        <p>Input in Back field <span id="b">_</span> to get <span id="bp">_</span></p>
-        <p>Input in Lay field <span id="l">_</span> to wase <span id="lp">_</span></p>
-    </form>
+    <div id="error-message1" class="error-message">Each input field must contain more than 1.<br><br></div>
+    <div id="error-message2" class="error-message">Not possible to suggest a 100% win rate at this ratio.<br><br></div>
 
-    <script>
-        const loginForm = document.getElementById("loginForm");
-        const currentForm = document.getElementById("currentForm");
+    <button type="button" onclick="check()">Check</button>
+    <button type="button" id="logout">Logout</button>
+    <p>Input at <span id="f">_</span> in <span style="font-weight: bold;">Back</span> field <span id="b">_</span> to
+      profit <span id="bp">_</span> or loss <span id="bl">_</span></p>
+    <p>Input at <span id="s">_</span> in <span style="font-weight: bold;">Lay</span> field <span id="l">_</span> to
+      profit <span id="lp">_</span> or loss <span id="ll">_</span></p>
+  </form>
 
-        const SESSION_KEY = "isLoggedIn";
-        const TIMEOUT_KEY = "lastActive";
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const currentForm = document.getElementById("currentForm");
+    const logoutButton = document.getElementById("logout");
+    const errorMessage = document.getElementById("error-message");
 
-        function login() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
+    const SESSION_KEY = "isLoggedIn";
+    const TIMEOUT_KEY = "lastActive";
 
-            if (username === "abc" && password === "123") {
-                sessionStorage.setItem(SESSION_KEY, "true");
-                sessionStorage.setItem(TIMEOUT_KEY, Date.now());
-                showCurrentForm();
-            } else {
-                alert("Invalid credentials");
-            }
-        }
+    function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
 
-        function logout() {
-            sessionStorage.removeItem(SESSION_KEY);
-            sessionStorage.removeItem(TIMEOUT_KEY);
-            showLoginForm();
-        }
+      // Check if username and password are correct
+      if (username === "boguschecker" && password === "Freebogusbit1#") {
+        sessionStorage.setItem(SESSION_KEY, "true");
+        sessionStorage.setItem(TIMEOUT_KEY, Date.now());
+        showCurrentForm();
+        errorMessage.style.display = "none"; // Hide error message on successful login
+      } else {
+        errorMessage.style.display = "block"; // Show error message on failed login
+      }
+    }
 
-        function check() {
-            alert("Check functionality goes here!");
-        }
+    function logout() {
+      // Remove session data
+      sessionStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(TIMEOUT_KEY);
 
-        function showLoginForm() {
-            loginForm.classList.remove("hidden");
-            currentForm.classList.add("hidden");
-        }
+      // Clear the form fields
+      document.getElementById("username").value = "";
+      document.getElementById("password").value = "";
 
-        function showCurrentForm() {
-            loginForm.classList.add("hidden");
-            currentForm.classList.remove("hidden");
-        }
+      // Show login form again
+      showLoginForm();
+    }
 
-        function autoLogout() {
-            const lastActive = parseInt(sessionStorage.getItem(TIMEOUT_KEY), 10);
-            const now = Date.now();
-            if (now - lastActive > 30 * 60 * 1000) {
-                logout();
-            }
-        }
+    function check() {
+      // Prompt user for input values
+      let A = parseFloat(document.getElementById("back").value);
+      let B = parseFloat(document.getElementById("lay").value);
+      let C = parseFloat(document.getElementById("profit").value);
 
-        // Initialize page based on session
-        if (sessionStorage.getItem(SESSION_KEY)) {
-            sessionStorage.setItem(TIMEOUT_KEY, Date.now()); // Update last active time
-            showCurrentForm();
-        } else {
-            showLoginForm();
-        }
+      // Check if any input is empty or less than 1
+      if (isNaN(A) || isNaN(B) || isNaN(C) || A <= 1 || B <= 1 || C <= 1) {
+        document.getElementById('error-message2').style.display = "none";
+        document.getElementById('error-message1').style.display = "block"; // Show error message
+        return; // Stop the function execution if input is invalid
+      }
+      if (A <= B) {
+        document.getElementById('error-message1').style.display = "none";
+        document.getElementById('error-message2').style.display = "block"; // Hide error message
+        return;
+      }
+      else {
+        document.getElementById('error-message1').style.display = "none"; // Hide error message
+        document.getElementById('error-message2').style.display = "none";
+      }
 
-        // Monitor activity and auto-logout after 30 minutes of inactivity
-        setInterval(autoLogout, 1000);
-    </script>
+      // Decrease A
+      A -= 1;
+
+      // Decrease B and then store the original value in D
+      B -= 1;
+      let D = B;
+
+      // Update B to 100 / B
+      B = 1 / B;
+
+      // Update C to C / 100
+      C = C / 100;
+
+      // Check if the updated inputs are still positive
+      if (A > 0 && B > 0 && C > 0) {
+        // Solve equations
+        // From equation 1: (X * A) - Y1 = C  => Y1 = (X * A) - C
+        // Substitute into equation 2: (Y * D * B) - (X * A) = C
+        // => ((X * A - C) / D) * B - (X * A) = C
+        // Solve for X
+        let X = (C * B + C) / (A * B - 1);
+
+        // Calculate Y using X
+        let Y = ((X * A) - C) / D;
+
+        // Calculate X1 and Y1
+        let X1 = A * X; // Multiplication of decremented A and X
+        let Y1 = D * Y; // Multiplication of original B (D) and Y
+        A = A + 1;
+        D = D + 1;
+        A = (A.toFixed(2));
+        D = (D.toFixed(2));
+        document.getElementById("f").innerHTML = A;
+        document.getElementById("s").innerHTML = D;
+
+
+        // Round results to 2 decimal places
+        X = parseFloat(X.toFixed(2));
+        Y = parseFloat(Y.toFixed(2));
+        X1 = parseFloat(X1.toFixed(2));
+        Y1 = parseFloat(Y1.toFixed(2));
+        document.getElementById("b").innerHTML = X;
+        document.getElementById("l").innerHTML = Y;
+
+        document.getElementById("bp").innerHTML = X1;
+        document.getElementById("lp").innerHTML = Y;
+        document.getElementById("bl").innerHTML = X;
+        document.getElementById("ll").innerHTML = Y1;
+
+
+      }
+    }
+
+
+    function showLoginForm() {
+      loginForm.classList.remove("hidden");
+      currentForm.classList.add("hidden");
+    }
+
+    function showCurrentForm() {
+      loginForm.classList.add("hidden");
+      currentForm.classList.remove("hidden");
+    }
+
+    function autoLogout() {
+      const lastActive = parseInt(sessionStorage.getItem(TIMEOUT_KEY), 10);
+      const now = Date.now();
+      if (now - lastActive > 0.1 * 60 * 1000) {
+        // Remove session data
+        sessionStorage.removeItem(SESSION_KEY);
+        sessionStorage.removeItem(TIMEOUT_KEY);
+
+        // Clear the form fields
+        document.getElementById("username").value = "";
+        document.getElementById("password").value = "";
+
+        // Show login form again
+        showLoginForm();
+      }
+    }
+
+    // Initialize page based on session
+    if (sessionStorage.getItem(SESSION_KEY)) {
+      sessionStorage.setItem(TIMEOUT_KEY, Date.now()); // Update last active time
+      showCurrentForm();
+    } else {
+      showLoginForm();
+    }
+
+    // Monitor activity and auto-logout after 30 minutes of inactivity
+    //setInterval(autoLogout, 1000);
+
+    // Add custom event listener for logout
+    logoutButton.addEventListener("click", function (event) {
+      event.preventDefault(); // Prevent default button behavior
+      logout(); // Call logout function manually
+    });
+  </script>
 </body>
 
 </html>
